@@ -1,7 +1,7 @@
 import java.util.Scanner;
 
 import org.omg.Messaging.SyncScopeHelper;
-
+//123455678
 public class DungeonGame
 	{
 		static Scanner userInput = new Scanner(System.in);
