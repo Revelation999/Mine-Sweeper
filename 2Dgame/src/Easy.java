@@ -1,14 +1,16 @@
 import java.util.Scanner;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 public class Easy {
-	static Scanner userInput= new Scanner(System.in);
-public static void gameEasy()
+public static void gameEasy(int a, int b, double difficulty)
 {
-	char board[][] = new char[10][10];
+	Scanner userInput= new Scanner(System.in);
+	char board[][] = new char[a][b];
 	int count = 0;
-	while (count < 10)
+	while (count < a*b*difficulty)
 	{
-		int row = (int)(Math.random()*10);
-		int col = (int)(Math.random()*10);
+		int row = (int)(Math.random()*a);
+		int col = (int)(Math.random()*b);
 		if (board[row][col]!='*')
 		{
 		board[row][col]='*';
@@ -19,91 +21,30 @@ public static void gameEasy()
 			continue;
 		}
 	}
-	for (int r = 0; r < 10; r++)
+	for (int r = 0; r < a; r++)
 	{
-		for (int c = 0; c < 10; c++)
+		for (int c = 0; c < b; c++)
 		{
-			if (board[r][c] != '*')
-			{
-			int num = 0;
-			if (r !=0 && c!=0)
-			{
-			if (board[r-1][c-1] == '*')
-			{
-				num++;
-			}
-			}
-			if (r!=0)
-			{
-			if (board[r-1][c] == '*')
-			{
-				num++;
-			}
-			}
-			if (r!=0 && c!= 9)
-			{
-			if (board[r-1][c+1] == '*')
-			{
-				num++;
-			}
-			}
-			if (c!=0)
-			{
-			if (board[r][c-1] == '*')
-			{
-				num++;
-			}
-			}
-			if (c!=9)
-			{
-			if (board[r][c+1] == '*')
-			{
-				num++;
-			}
-			}
-			if (r!=9 && c!=0)
-			{
-			if (board[r+1][c-1]=='*')
-			{
-				num++;
-			}
-			}
-			if (r!=9)
-			{
-			if (board[r+1][c]=='*')
-			{
-				num++;
-			}
-			}
-			if (r!=9 && c!=9)
-			{
-			if (board[r+1][c+1]=='*')
-			{
-				num++;
-			}
-			}
-			board[r][c] = (char) (num+48);
-			}
+			board[r][c] = Check.checkSurrounding(board, r, c, '*');
 		}
 	}
 	boolean finish = false;
 	int win = 0;
-	int mineNum = 10;
-	char vision[][] = new char [10][10];
-	for (int r = 0; r < 10; r++)
+	int mineNum = (int) (a*b*difficulty);
+	char vision[][] = new char [a][b];
+	for (int r = 0; r < a; r++)
 	{
-		for (int c = 0; c < 10; c++)
+		for (int c = 0; c < b; c++)
 		{
 			vision[r][c] = '-';
 		}
 	}
 	do{
 		showVision(vision);
-		System.out.println("Mine or not?");
-		Scanner userInput2= new Scanner(System.in);
-		String answer = userInput2.nextLine();
-		//boolean mine = userInput.nextLine().equalsIgnoreCase("mine");
-		if (answer.equalsIgnoreCase("mine"))
+		//System.out.println("Mine or not?");
+		Object pc[] = {"mine", "not"};
+		int choice = JOptionPane.showOptionDialog(null, "Mine or Not","Steve's minesweeper",JOptionPane.YES_NO_CANCEL_OPTION,JOptionPane.QUESTION_MESSAGE, null,pc, pc[1]);
+		if (choice == 0)
 		{
 			int row = askRow();
 			int col = askCol();
@@ -119,19 +60,17 @@ public static void gameEasy()
                                 finish = true;
 			}
 		}
-		else if (answer.equalsIgnoreCase("not"))
+		else if (choice == 1)
 		{
 			int row = askRow();
 			int col = askCol();
-			if(board [row][col] =='*')
+			vision[row][col] = board[row][col];
+			Check.checkZero(vision, board);
+			boolean what = Check.checkMine(vision);
+			if(what)
 			{
 				finish = true;
 				win = 1;
-			}
-			else
-			{
-				vision[row][col] = board[row][col];
-				checkZero(vision, board);
 			}
 		}
 	} while (!finish);
@@ -151,60 +90,34 @@ public static void gameEasy()
 public static void showVision (char[][] vis)
 {
 	System.out.print("   ");
-	for(int i = 1; i < 10;  i++) {
-		System.out.print(i+" ");
+	for(int i = 1; i <= vis.length;  i++) {
+		System.out.printf("%3s", i);
 	}
-	System.out.println("A");
-	
-	for (int r = 0; r < 10; r++)
+	System.out.println();
+	for (int r = 0; r < vis.length; r++)
 	{
-		if(r != 9)
-		System.out.print((r+1)+"  ");
-		else
-			System.out.print("A  ");
-		for (int c = 0; c < 10; c++)
+		System.out.printf("%-3s" ,(r+1));
+		for (int c = 0; c < vis[0].length; c++)
 		{
-			System.out.print(vis[r][c]+" ");
+			System.out.printf("%3c" ,vis[r][c]);
 		}
 		System.out.println();
 	}
 }
 public static int askRow()
 {
+	Scanner userInput= new Scanner(System.in);
 	System.out.println("Which row?");
 	int answer = userInput.nextInt() -1;
 	return answer;
 }
 public static int askCol()
 {
+	Scanner userInput= new Scanner(System.in);
 	System.out.println("Which column?");
 	int answer = userInput.nextInt() -1;
 	return answer;
 }
-public static void checkZero(char[][] vis, char[][] boa)
-{
-	int check = 100;
-	do{
-		for (int r = 0; r < 10; r++)
-		{
-			for (int c = 0; c < 10; c++)
-			{
-				if (vis[r][c]== '0')
-				{
-					if(r>0&&c>0){vis[r-1][c-1]=boa[r-1][c-1];}if(r>0)vis[r-1][c]=boa[r-1][c];if(r>0&&c<9){vis[r-1][c+1]=boa[r-1][c+1];}if(c>0){vis[r][c-1]=boa[r][c-1];}
-					if(c<9){vis[r][c+1]=boa[r][c+1];}if(r<9&&c>0){vis[r+1][c-1]=boa[r+1][c-1];}if(r<9){vis[r+1][c]=boa[r+1][c];}if(r<9&&c<9){vis[r+1][c+1]=boa[r+1][c+1];}
-					//check--;
-				}
-				else if (vis[r][c]!='0')
-				{
-					check--;
-				}
-				
-			}
-		}
-	}while (check > 0);
-}
-public static void main(String[] args){
-	gameEasy();
-}
+
+
 }
